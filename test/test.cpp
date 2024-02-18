@@ -12,8 +12,6 @@ std::map<std::string, TestName> testNameMap = {
 };
 
 int main(int argc, char *argv[]) {
-    int value = spaceMiningFunction();
-    printf("Testing! %d", value);
     TestName testName = testNameMap.count(argv[1]) ? testNameMap[argv[1]] : BAD_NAME;
     switch (testName) {
         case TEST1:

@@ -53,11 +53,9 @@ int GetMiningTimeGlobalWrapper() {
 
 
 int main(int argc, char* argv[]) {
-    int value = spaceMiningFunction();
-    printf("Hello World! %d", value);
     int numTrucks, numStations;
     ParseArgs(argc, argv, &numTrucks, &numStations);
-    printf("\n%d %d\n", numTrucks, numStations);
+    printf("\nNumber of Trucks: %d, Number of Stations: %d\n", numTrucks, numStations);
     MiningTimeRandomizer randomizer;
     gRandomizer = &randomizer;
     EventLog log;

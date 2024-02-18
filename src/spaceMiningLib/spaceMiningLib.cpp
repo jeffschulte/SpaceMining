@@ -1,10 +1,6 @@
 #include <spaceMining.h>
 #include <cmath>
 
-int spaceMiningFunction() {
-    return 5;
-}
-
 void EventLog::AddEvent(Event event) { 
     eventLog.push_back(event);
 }
@@ -19,7 +15,6 @@ void EventLog::PrintTruckStats(int truck) {
     int numberLoadsMined = 0;
     int timeSpentWaitingToUnload = 0;
     for (int i=0;i<truckLog.size();i++) {
-        //printf("\nin %d %d", truckLog[i].time, truckLog[i-1].time);
         switch (truckLog[i].eventType)
         {
             case ARRIVE_AT_MINING_SITE:
@@ -30,21 +25,20 @@ void EventLog::PrintTruckStats(int truck) {
             case ARRIVE_AT_STATION:
                 break;
             case FINISH_UNLOADING:
-                //printf("\n%d %d %d %d\n", truckLog[i-1].eventType, truckLog[i].time, truckLog[i-1].time, TRUCK_UNLOAD_TIME);
-                timeSpentWaitingToUnload += (truckLog[i].time - truckLog[i-1].time - TRUCK_UNLOAD_TIME);
+                timeSpentWaitingToUnload += truckLog[i].timeSpentWaiting;
                 break;
             default:
                 printf("\nBadTruckLogEntry\n");
                 exit(1);
         }
     }
-    printf("\nTruck Number %d: NumberLoadsMined = %d, TimeSpentWaitingToUnload = %d\n", truck, numberLoadsMined, timeSpentWaitingToUnload);
+    printf("\nTruck Number %d: NumberLoadsMined = %d, TotalTimeSpentWaitingToUnload = %d, Average Wait Time = %.3f\n", truck, numberLoadsMined, timeSpentWaitingToUnload, (float)timeSpentWaitingToUnload/(float)numberLoadsMined);
 }
 
 void EventLog::PrintStationStats(int station) {
     std::vector<Event> stationLog;
     for (int i=0;i<eventLog.size();i++) {
-        if (eventLog[i].truckNumber == station) {
+        if (eventLog[i].stationNumber == station) {
             stationLog.push_back(eventLog[i]);
         }
     }
@@ -59,15 +53,13 @@ void EventLog::PrintStationStats(int station) {
             totalWaitTime += stationLog[i].time - stationLog[j].time - TRUCK_UNLOAD_TIME;
         }
     }
-    printf("\nStation Number %d: TotalNumberTrucksUnloaded = %d, AverageWaitTime = %d\n", station, totalNumberTrucksUnloaded, totalWaitTime/totalNumberTrucksUnloaded);
+    printf("\nStation Number %d: TotalNumberTrucksUnloaded = %d, AverageWaitTime = %.3f\n", station, totalNumberTrucksUnloaded, (float)totalWaitTime/(float)totalNumberTrucksUnloaded);
 }
 
 void EventLog::PrintLog() {
     printf("\n\neventType,time,truckNumber,stationNumber,truckReservationTime\n");
     for (int i=0;i<eventLog.size();i++) {
-        if (eventLog[i].truckNumber == 0) {
-            printf("%d,%d,%d,%d,%d\n", eventLog[i].eventType, eventLog[i].time, eventLog[i].truckNumber, eventLog[i].stationNumber, eventLog[i].truckReservationTime);
-        }
+        printf("%d,%d,%d,%d,%d\n", eventLog[i].eventType, eventLog[i].time, eventLog[i].truckNumber, eventLog[i].stationNumber, eventLog[i].truckReservationTime);
     }
 }
 
@@ -80,29 +72,39 @@ int Station::ReserveNextTime(int currentTime) {
         rsvdUntil += TRUCK_UNLOAD_TIME;
         return rsvdUntil;
     } else {
-        printf("current %d, rsvdUntil %d\n", currentTime, rsvdUntil);
         rsvdUntil = currentTime + TRUCK_TRAVEL_TIME + TRUCK_UNLOAD_TIME;
         return rsvdUntil;
     }
 }
 
-MiningManager::MiningManager(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func) : stations(numTrucks, Station(0)), log(log), GetMiningTime(func) {
+void MiningManager::DebugPrintEvents() {
+    printf("Debug printing events\n");
+    for (Event elem : eventList) {
+        printf("%d %d %d\n", elem.eventType, elem.time, elem.truckNumber);
+    }
+    printf("\n");
+}
+
+MiningManager::MiningManager(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func) : stations(numStations, Station(0)), log(log), GetMiningTime(func) {
     for (int i=0;i<numTrucks;i++) {
         eventList.insert({ ARRIVE_AT_MINING_SITE, 0, i });
     }
 }
 
+MiningManager* MiningManager::singleInstance = nullptr;
+MiningManager* MiningManager::GetInstance(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func) {
+    if (singleInstance == nullptr) {
+        singleInstance = new MiningManager(numTrucks, numStations, log, func);
+    }
+    return singleInstance;
+}
+
 void MiningManager::RunSimulation() {
     int currentEventTime = 0;
-    //int debug = 0;
     while (eventList.size() > 0) {
-        //debug++;
-        //if(debug > 10) exit(1);
         auto it = eventList.begin();
         Event nextEvent = HandleEvent(*it);
-        //printf("\n DEBUG %d %d, %d %d,\n", (*it).eventType, (*it).time, nextEvent.eventType, nextEvent.time);
         if (nextEvent.time < TOTAL_SIMULATION_TIME) {
-            //printf("\n DEBUG isnide\n");
             eventList.insert(nextEvent);
         }
         eventList.erase(it);
@@ -111,7 +113,7 @@ void MiningManager::RunSimulation() {
 
 
 int MiningManager::GetNextMiningStation() {
-    int currentMinRsvdUntil = TOTAL_SIMULATION_TIME;
+    int currentMinRsvdUntil = TOTAL_SIMULATION_TIME * 0x1000; // just needs to be large
     int stationNumber = -1;
     for (int i=0;i<stations.size();i++) {
         if (stations[i].GetRsvdTime() < currentMinRsvdUntil) {
@@ -142,11 +144,10 @@ Event MiningManager::HandleEvent(Event event) {
             // the truck will get a reservation time at a specific station, then depart for that station.
             stationToTravelTo = GetNextMiningStation();
             newRsvdTime = stations[stationToTravelTo].ReserveNextTime(event.time);
-            printf("RSVD TIME %d\n", stations[stationToTravelTo].GetRsvdTime());
             return { ARRIVE_AT_STATION, event.time + TRUCK_TRAVEL_TIME, event.truckNumber, stationToTravelTo, newRsvdTime };
         case ARRIVE_AT_STATION:
-            // the truck will finish unloading at its pre-given reservation time
-            return { FINISH_UNLOADING, event.truckReservationTime, event.truckNumber, event.stationNumber };
+            // the truck will finish unloading at its pre-given reservation time. Will fill in time spent waiting feild
+            return { FINISH_UNLOADING, event.truckReservationTime, event.truckNumber, event.stationNumber, 0, event.truckReservationTime - event.time - TRUCK_UNLOAD_TIME };
         case FINISH_UNLOADING:
             // the truck will depart for the mining site
             return { ARRIVE_AT_MINING_SITE, event.time + TRUCK_TRAVEL_TIME, event.truckNumber };

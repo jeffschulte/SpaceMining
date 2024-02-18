@@ -22,6 +22,7 @@ struct Event {
     int truckNumber;
     int stationNumber = 0;
     int truckReservationTime = 0;
+    int timeSpentWaiting = 0;
 };
 
 class EventLog {
@@ -44,6 +45,7 @@ public:
 // maybe do singleton pattern on the Mining Manager as a whole, since there must be only one
 typedef int (*GetMiningTimeFunc)();
 class MiningManager {
+    static MiningManager* singleInstance;
     struct EventCompare {
         bool operator()(const Event& lhs, const Event& rhs) const {
             return lhs.time < rhs.time; // Order elements in descending order
@@ -56,8 +58,13 @@ class MiningManager {
     Event HandleEvent(Event event);
     int GetNextMiningStation();
     EventLog* log;
+    void DebugPrintEvents();
 public:
     MiningManager(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func);
+    // singleton design pattern - disallow copying by deleting copy and assignment constructors
+    MiningManager(const MiningManager&) = delete;
+    MiningManager& operator=(const MiningManager&) = delete;
+    static MiningManager* GetInstance(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func);
     void RunSimulation();
 };
 
