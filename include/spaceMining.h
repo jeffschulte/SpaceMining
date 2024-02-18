@@ -6,7 +6,8 @@ int spaceMiningFunction();
 
 #define TRUCK_TRAVEL_TIME 30 // thirty minutes to travel from site to station
 #define TRUCK_UNLOAD_TIME 5 // 5 minutes to unload load at station
-#define TOTAL_SIMULATION_TIME 72*60 // 72 hours of total simulation
+//#define TOTAL_SIMULATION_TIME 72*60 // 72 hours of total simulation
+#define TOTAL_SIMULATION_TIME 1500 // 72 hours of total simulation
 
 enum EventType {
     ARRIVE_AT_MINING_SITE,
@@ -27,6 +28,9 @@ class EventLog {
     std::vector<Event> eventLog;
 public:
     void AddEvent(Event event);
+    void PrintLog();
+    void PrintTruckStats(int truck);
+    void PrintStationStats(int station);
 };
 
 class Station {
@@ -38,23 +42,22 @@ public:
 };
 
 // maybe do singleton pattern on the Mining Manager as a whole, since there must be only one
+typedef int (*GetMiningTimeFunc)();
 class MiningManager {
     struct EventCompare {
         bool operator()(const Event& lhs, const Event& rhs) const {
             return lhs.time < rhs.time; // Order elements in descending order
         };
     };
-    std::set<Event, EventCompare> eventList;
+    std::multiset<Event, EventCompare> eventList;
     std::vector<Station> stations;
-    std::random_device rd; // JEFF not doing random correctly
-    std::mt19937 gen;
+    GetMiningTimeFunc GetMiningTime;
 
-    int GetMiningTime();
     Event HandleEvent(Event event);
-    int GetAndReserveNextMiningStation();
+    int GetNextMiningStation();
     EventLog* log;
 public:
-    MiningManager(int numTrucks, int numStations, EventLog* log);
+    MiningManager(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func);
     void RunSimulation();
 };
 
