@@ -34,6 +34,11 @@ If on windows, the cmake and make commands will be:
 "<path>\msbuild.exe" ALL_BUILD.vcxproj
 
 Executing
+cd src
+./spaceMining -m <numberOfStations> -n <numberOfTrucks> -f <logFileName>
+the -f argument is optional
+
+If on windows:
 cd src/Debug/
 ./spaceMining.exe -m <numberOfStations> -n <numberOfTrucks> -f <logFileName>
 the -f argument is optional
