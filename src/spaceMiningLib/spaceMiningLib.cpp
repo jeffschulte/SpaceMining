@@ -1,10 +1,13 @@
 #include <spaceMining.h>
 #include <cmath>
 
+namespace SpaceMining {
+
 void EventLog::AddEvent(Event event) { 
     eventLog.push_back(event);
 }
 
+// Aggregate stats for a specific truck and print
 void EventLog::PrintTruckStats(int truck) {
     std::vector<Event> truckLog;
     for (int i=0;i<eventLog.size();i++) {
@@ -35,6 +38,7 @@ void EventLog::PrintTruckStats(int truck) {
     printf("\nTruck Number %d: NumberLoadsMined = %d, TotalTimeSpentWaitingToUnload = %d, Average Wait Time = %.3f\n", truck, numberLoadsMined, timeSpentWaitingToUnload, (float)timeSpentWaitingToUnload/(float)numberLoadsMined);
 }
 
+// Aggregate stats for a specific station and print
 void EventLog::PrintStationStats(int station) {
     std::vector<Event> stationLog;
     for (int i=0;i<eventLog.size();i++) {
@@ -67,6 +71,9 @@ int Station::GetRsvdTime() {
     return rsvdUntil;
 }
 
+// Reserve next time at a given station. A truck will call this from the site, so first check whether it will have to wait by the time
+// it travels thirty minutes to get there. If it will have to wait, then simply tack on the unload time to the current reserved time.
+// If it will not have to wait, then reserve a time that is the time it takes to travel plus the unload time
 int Station::ReserveNextTime(int currentTime) {
     if (rsvdUntil > currentTime + TRUCK_TRAVEL_TIME) {
         rsvdUntil += TRUCK_UNLOAD_TIME;
@@ -77,20 +84,14 @@ int Station::ReserveNextTime(int currentTime) {
     }
 }
 
-void MiningManager::DebugPrintEvents() {
-    printf("Debug printing events\n");
-    for (Event elem : eventList) {
-        printf("%d %d %d\n", elem.eventType, elem.time, elem.truckNumber);
-    }
-    printf("\n");
-}
-
+// Seed the event list with all the trucks arriving at a mining site at time 0
 MiningManager::MiningManager(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func) : stations(numStations, Station(0)), log(log), GetMiningTime(func) {
     for (int i=0;i<numTrucks;i++) {
         eventList.insert({ ARRIVE_AT_MINING_SITE, 0, i });
     }
 }
 
+// Using singleton pattern for the MiningManager because there should only be one of these in the simulation
 MiningManager* MiningManager::singleInstance = nullptr;
 MiningManager* MiningManager::GetInstance(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func) {
     if (singleInstance == nullptr) {
@@ -99,6 +100,8 @@ MiningManager* MiningManager::GetInstance(int numTrucks, int numStations, EventL
     return singleInstance;
 }
 
+// Main loop. Picks next event, runs HandleEvent to get next event, then adds that to the sorted list.
+// then picks the next one, etc.
 void MiningManager::RunSimulation() {
     int currentEventTime = 0;
     while (eventList.size() > 0) {
@@ -111,7 +114,8 @@ void MiningManager::RunSimulation() {
     }
 }
 
-
+// Scans through all the stations, looking at when each one is reserved, and returns the station with the
+// earliest reservation time
 int MiningManager::GetNextMiningStation() {
     int currentMinRsvdUntil = TOTAL_SIMULATION_TIME * 0x1000; // just needs to be large
     int stationNumber = -1;
@@ -129,7 +133,7 @@ int MiningManager::GetNextMiningStation() {
 }
 
 
-
+// Process the event, then calculate what is the next event for the same truck that was in this one.  Return the next event.
 Event MiningManager::HandleEvent(Event event) {
     log->AddEvent(event);
     int miningTime;
@@ -156,3 +160,46 @@ Event MiningManager::HandleEvent(Event event) {
             exit(1);
     }
 }
+
+
+// Util functions
+void PrintArt() {
+    printf("  _______                  _______              \n");
+    printf(" /       L\_     .-.       /       L\_     __     \n");
+    printf("|           |==( @ )     |           |==|  \\_   \n");
+    printf("'-OO--OO--O-'   '-'      '-OO--OO--O-'   `--´   \n");
+    printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+}
+
+void PrintUsage() {
+    printf("\nUsage: ./spaceMining -n <number of trucks> -m <number of unload stations>\n");
+}
+
+void ParseArgs(int argc, char* argv[], int* numTrucks, int* numStations, bool* printLog) {
+    if (argc != 5 && argc != 6) {
+        PrintUsage();
+        std::exit(1);
+    }
+
+    bool mFound = false, nFound = false;
+
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "-m") {
+            *numStations = std::atoi(argv[i + 1]);
+            mFound = true;
+        } else if (arg == "-n") {
+            *numTrucks = std::atoi(argv[i + 1]);
+            nFound = true;
+        } else if (arg == "-p") {
+            *printLog = true;
+        }
+    }
+
+    if (!mFound || !nFound) {
+        PrintUsage();
+        std::exit(1);
+    }
+}
+
+} // namespace SpaceMining

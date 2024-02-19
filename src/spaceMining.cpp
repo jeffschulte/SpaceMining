@@ -1,47 +1,6 @@
 #include <iostream>
 #include <spaceMining.h>
 
-
-void PrintArt() {
-    printf("  _______                  _______              \n");
-    printf(" /       L\_     .-.       /       L\_     __     \n");
-    printf("|           |==( @ )     |           |==|  \\_   \n");
-    printf("'-OO--OO--O-'   '-'      '-OO--OO--O-'   `--´   \n");
-    printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
-}
-
-void PrintUsage() {
-    std::cout << "Usage: ./spaceMining -n <number of trucks> -m <number of unload stations>\n";
-}
-
-void ParseArgs(int argc, char* argv[], int* numTrucks, int* numStations) {
-    if (argc != 5) {
-        PrintUsage();
-        std::exit(1);
-    }
-
-    bool mFound = false, nFound = false;
-
-    for (int i = 1; i < argc; i += 2) {
-        std::string arg = argv[i];
-        if (arg == "-m") {
-            *numStations = std::atoi(argv[i + 1]);
-            mFound = true;
-        } else if (arg == "-n") {
-            *numTrucks = std::atoi(argv[i + 1]);
-            nFound = true;
-        } else {
-            PrintUsage();
-            std::exit(1);
-        }
-    }
-
-    if (!mFound || !nFound) {
-        PrintUsage();
-        std::exit(1);
-    }
-}
-
 class MiningTimeRandomizer {
     std::random_device rd;
     std::mt19937 gen;
@@ -61,16 +20,17 @@ int GetMiningTimeGlobalWrapper() {
 
 
 int main(int argc, char* argv[]) {
-    PrintArt();
+    SpaceMining::PrintArt();
     int numTrucks, numStations;
-    ParseArgs(argc, argv, &numTrucks, &numStations);
+    bool printLog = false;
+    SpaceMining::ParseArgs(argc, argv, &numTrucks, &numStations, &printLog);
     printf("\nNumber of Trucks: %d, Number of Stations: %d\n", numTrucks, numStations);
     MiningTimeRandomizer randomizer;
     gRandomizer = &randomizer;
-    EventLog log;
-    MiningManager miningManager(numTrucks, numStations, &log, GetMiningTimeGlobalWrapper);
+    SpaceMining::EventLog log;
+    SpaceMining::MiningManager miningManager(numTrucks, numStations, &log, GetMiningTimeGlobalWrapper);
     miningManager.RunSimulation();
-    //log.PrintLog();
+    if (printLog) log.PrintLog();
     for(int i=0;i<numTrucks;i++) {
         log.PrintTruckStats(i);
     }

@@ -2,6 +2,8 @@
 #include <random>
 #include <set>
 
+namespace SpaceMining {
+    
 #define TRUCK_TRAVEL_TIME 30 // thirty minutes to travel from site to station
 #define TRUCK_UNLOAD_TIME 5 // 5 minutes to unload load at station
 //#define TOTAL_SIMULATION_TIME 72*60 // 72 hours of total simulation
@@ -23,6 +25,7 @@ struct Event {
     int timeSpentWaiting = 0;
 };
 
+// This is the sorted list (sorted in time) of all the events.
 class EventLog {
     std::vector<Event> eventLog;
 public:
@@ -32,6 +35,7 @@ public:
     void PrintStationStats(int station);
 };
 
+// The stations keep track of their latest reservation time, which can be quaried and updated
 class Station {
     int rsvdUntil = 0;
 public:
@@ -40,7 +44,10 @@ public:
     Station(int initRsvdUntil) : rsvdUntil(initRsvdUntil) {};
 };
 
-// maybe do singleton pattern on the Mining Manager as a whole, since there must be only one
+// The conducting class is the MiningManager, and we use singleton pattern to ensure that there is only one of these.
+// It holds the event list, which the core loop of the program, RunSimulation(), will loop through.
+// It also holds a list of the stations
+// Also holds the event log, which has copies of all the events that occured along the way. 
 typedef int (*GetMiningTimeFunc)();
 class MiningManager {
     static MiningManager* singleInstance;
@@ -56,13 +63,18 @@ class MiningManager {
     Event HandleEvent(Event event);
     int GetNextMiningStation();
     EventLog* log;
-    void DebugPrintEvents();
 public:
     MiningManager(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func);
-    // singleton design pattern - disallow copying by deleting copy and assignment constructors
+    // Singleton design pattern - disallow copying by deleting copy and assignment constructors
     MiningManager(const MiningManager&) = delete;
     MiningManager& operator=(const MiningManager&) = delete;
     static MiningManager* GetInstance(int numTrucks, int numStations, EventLog* log, GetMiningTimeFunc func);
     void RunSimulation();
 };
 
+// Util functions
+void PrintArt();
+void PrintUsage();
+void ParseArgs(int argc, char* argv[], int* numTrucks, int* numStations, bool* printLog);
+
+} // namespace SpaceMining
