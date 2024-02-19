@@ -33,7 +33,7 @@ make
 Executing
 cd src/Debug/
 ./spaceMining.exe -m <numberOfStations> -n <numberOfTrucks> -f <logFileName>
-the -f argument is option
+the -f argument is optional
 
 Executing Tests
 cd test/Debug/
