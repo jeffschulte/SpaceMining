@@ -57,8 +57,16 @@ class MiningManager {
         };
     };
     std::multiset<Event, EventCompare> eventList;
-    std::vector<Station> stations;
     GetMiningTimeFunc GetMiningTime;
+// about this ifdef. I wouldnt do this in production. I would either set up a class in the test executable that is a freind of this one,
+// and then in that class would instantiate a MiningManager, and then be able to run all the private functions on it,
+// or I would use google test (we used gtest at my first company), which has ways of dealing with this. Unfoturnatley Im running out of time
+// so this is my quick and dirty solution to the testing-access-to-private-function issue
+#define UNIT_TEST
+#ifdef UNIT_TEST
+public:
+#endif
+    std::vector<Station> stations;
 
     Event HandleEvent(Event event);
     int GetNextMiningStation();
