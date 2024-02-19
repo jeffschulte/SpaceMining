@@ -6,8 +6,8 @@ namespace SpaceMining {
     
 #define TRUCK_TRAVEL_TIME 30 // thirty minutes to travel from site to station
 #define TRUCK_UNLOAD_TIME 5 // 5 minutes to unload load at station
-//#define TOTAL_SIMULATION_TIME 72*60 // 72 hours of total simulation
-#define TOTAL_SIMULATION_TIME 1500 // 72 hours of total simulation
+#define TOTAL_SIMULATION_TIME 72*60 // 72 hours of total simulation
+//#define TOTAL_SIMULATION_TIME 1500 // 72 hours of total simulation
 
 enum EventType {
     ARRIVE_AT_MINING_SITE,
