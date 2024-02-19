@@ -12,6 +12,7 @@ After unloading, they travel back to a site and start the process over again.
 The simulation is tracked in minutes. Its takes them 5 minutes to unload, 30 minutes to travel to and from sites, and 72*60 minutes for the entire simulation.
 At the end of the simulation, statistics of how things went are printed to the terminal, and an option log of every event that occured can be printed to a file.
 The program allows for a configurable number of trucks and stations.
+Adding option -p will print a csv style list of all the events that occured.
 
 The code is based on the central concept of an eventList, which is a sorted list of things that happened over the entire operation, sorted based on when that event will occur. The core function driving the simulation is the HandleEvent() function, the class MiningManager. The core function will pick the
 next event on the eventList (the first element on the list is the next event to occur), will process that event, and then insert a new event onto the list.
@@ -35,13 +36,13 @@ If on windows, the cmake and make commands will be:
 
 Executing
 cd src
-./spaceMining -m <numberOfStations> -n <numberOfTrucks> -f <logFileName>
-the -f argument is optional
+./spaceMining -m <numberOfStations> -n <numberOfTrucks> -p
+the -p argument is optional
 
 If on windows:
 cd src/Debug/
-./spaceMining.exe -m <numberOfStations> -n <numberOfTrucks> -f <logFileName>
-the -f argument is optional
+./spaceMining.exe -m <numberOfStations> -n <numberOfTrucks> -p
+the -p argument is optional
 
 Executing Tests
 cd test/Debug/
