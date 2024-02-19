@@ -1,4 +1,6 @@
 # SpaceMining
+WARNING!
+Read the README.md your own computer after pulling. I'm having an issue with github not printing them properly!
 
 Description
 The SpaceMining simulation is a program desgined to simulate the operaton of a team of Lunar mining trucks mining for Helium-3 on the Moon!
@@ -27,6 +29,7 @@ cmake -S . -B build
 cd build
 make
 
+If on windows, the cmake and make commands will be:
 "<path>/cmake.exe" -S . -B build
 "<path>\msbuild.exe" ALL_BUILD.vcxproj
 
