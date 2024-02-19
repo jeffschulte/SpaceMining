@@ -2,6 +2,14 @@
 #include <spaceMining.h>
 
 
+void PrintArt() {
+    printf("  _______                  _______              \n");
+    printf(" /       L\_     .-.       /       L\_     __     \n");
+    printf("|           |==( @ )     |           |==|  \\_   \n");
+    printf("'-OO--OO--O-'   '-'      '-OO--OO--O-'   `--´   \n");
+    printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+}
+
 void PrintUsage() {
     std::cout << "Usage: ./spaceMining -n <number of trucks> -m <number of unload stations>\n";
 }
@@ -53,6 +61,7 @@ int GetMiningTimeGlobalWrapper() {
 
 
 int main(int argc, char* argv[]) {
+    PrintArt();
     int numTrucks, numStations;
     ParseArgs(argc, argv, &numTrucks, &numStations);
     printf("\nNumber of Trucks: %d, Number of Stations: %d\n", numTrucks, numStations);
