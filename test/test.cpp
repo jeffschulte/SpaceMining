@@ -25,7 +25,8 @@ int IncTimeMining() {
 // You can pass in functions, defined above, that allow you to control the time of dig, so the tests are
 // not random.
 // The second test is an example of testing the station, essentially the math of the reservation function
-// These are unit tests but you could also just instantiate anything and run a small, deterministic simulation.
+// These are unit tests but you could also just instantiate everything and run a small, deterministic simulation,
+// which would allow for integration tests.
 // Things to test:
 // -Inserting two events with same time, make sure doesnt screw up
 // -Test at boundary of simulation length, make sure times and numbers show up correctly
