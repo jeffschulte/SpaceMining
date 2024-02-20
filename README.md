@@ -10,7 +10,7 @@ A truck will mine at a given site until it finishes a load.
 After mining a load, they travel to a station, where they wait in a queue for other trucks to finish unloading before unloading their own load.
 After unloading, they travel back to a site and start the process over again.
 The simulation is tracked in minutes. Its takes them 5 minutes to unload, 30 minutes to travel to and from sites, and 72*60 minutes for the entire simulation.
-At the end of the simulation, statistics of how things went are printed to the terminal, and an option log of every event that occured can be printed to a file.
+At the end of the simulation, statistics of how things went are printed to the terminal, and an option log of every event that occured can be printed.
 The program allows for a configurable number of trucks and stations.
 Adding option -p will print a csv style list of all the events that occured.
 
